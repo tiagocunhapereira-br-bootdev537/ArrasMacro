@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #SingleInstance Force
 SendMode("Input")
 SetKeyDelay(-1, -1)
@@ -279,13 +279,13 @@ F3:: {
     isRunning := !isRunning
 
     if isRunning {
-        ToolTip("MEGA-STACKER: LIGADO")
+        ToolTip("Stacker on!")
         SetTimer(() => ToolTip(), -1500)
         SetTimer(ExecuteMacroLoop, 1)
     } else {
         SetTimer(ExecuteMacroLoop, 0)
         SendInput("{' up}")
-        ToolTip("MEGA-STACKER: DESATIVADO")
+        ToolTip("Stacker off.")
         SetTimer(() => ToolTip(), -1500)
     }
 }
