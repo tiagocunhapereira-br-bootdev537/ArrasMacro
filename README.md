@@ -19,7 +19,7 @@ This project is strictly open-source. It can be edited, improved, and redistribu
 2. Run the script file.
 3. Use the following hotkeys in-game:
    * **F6**: Opens the configuration menu. Input target tank names separated by commas (e.g., `desmos, helix, quadruplex`).
-   * **F3**: Toggles the macro execution loop (*Mega-Stacker*) on or off.
+   * **F3**: Toggles the macro execution loop on or off.
 
 ## License
 
