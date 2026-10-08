@@ -33,6 +33,8 @@ if FileExist(configFile) {
 
 
 global TankTree := Map()
+TankTree["spectator"] := "!1|basic"
+TankTree["healer"] := "!2|basic"
 TankTree["basic"] := " |basic"
 TankTree["twin"] := "y|basic"
 TankTree["sniper"] := "u|basic" 
@@ -236,7 +238,11 @@ TankTree["quadruplex"] := "u|helix"
 TankTree["mega-smasher"] := "y|smasher" 
 TankTree["spike"] := "u|smasher" 
 TankTree["auto-smasher"] := "i|smasher" 
-TankTree["landmine"] := "h|smasher" 
+TankTree["landmine"] := "h|smasher"
+TankTree["medic"] := "y|healer"
+TankTree["ambulance"] := "u|healer"
+TankTree["surgeon"] := "i|healer"
+TankTree["paramedic"] := "h|healer"
 
 UpdateSequenceArray(rawInput)
 
@@ -289,15 +295,56 @@ F3:: {
         SetTimer(() => ToolTip(), -1500)
     }
 }
-
-
 ExecuteMacroLoop() {
     global compiledMacroSequence
     Critical
     
     for keyCombo in compiledMacroSequence {
-        SendInput("{' down}q{' up}" keyCombo)
-        PreciseSleep(11)
+        if (SubStr(keyCombo, 1, 1) == "!") {
+            parts := StrSplit(keyCombo, "!")
+            SendInput("{' down}{" parts[2] "}{' up}" parts[3]  "{' down}shhhhhhhhhhhhhhhhhhhhhhm{' up}" "{' down}acr{' up}")
+        } else {
+            SendInput("{' down}q{' up}" keyCombo  "{' down}shhhhhhhhhhhhhhhhhhhhhhm{' up}" "{' down}acr{' up}")
+        }
+        PreciseSleep(19)
+    }
+}
+
+UpdateSequenceArray(inputStr) {
+    global compiledMacroSequence, TankTree
+    compiledMacroSequence := [] 
+    
+    if (Trim(inputStr) == "") {
+        inputStr := "basic"
+    }
+    
+    Loop Parse, inputStr, "," {
+        cleanName := StrLower(Trim(A_LoopField))
+        if (cleanName == "")
+            continue
+            
+        if TankTree.Has(cleanName) {
+            pathKeys := ""
+            currentNode := cleanName
+            isHealerBranch := false
+            
+            while (currentNode != "basic" && TankTree.Has(currentNode)) {
+                nodeData := StrSplit(TankTree[currentNode], "|")
+                
+                if (SubStr(nodeData[1], 1, 1) == "!") {
+                    isHealerBranch := true
+                    pathKeys := nodeData[1] "!" pathKeys
+                    break
+                }
+                
+                pathKeys := nodeData[1] . pathKeys
+                currentNode := nodeData[2]
+            }
+            
+            compiledMacroSequence.Push(pathKeys)
+        } else {
+            compiledMacroSequence.Push(cleanName)
+        }
     }
 }
 
@@ -308,41 +355,5 @@ PreciseSleep(ms) {
     currentTicks := startTicks
     while ((currentTicks - startTicks) < targetTicks) {
         DllCall("kernel32\QueryPerformanceCounter", "Int64*", &currentTicks)
-    }
-}
-
-; --- DYNAMIC PARSER AND REVERSE TREE TRACKER (WITH VALID BASIC OBJECT) ---
-UpdateSequenceArray(inputStr) {
-    global compiledMacroSequence, TankTree
-    compiledMacroSequence := [] 
-    
-    ; If the input string is blank or cleared, treat it as a pure "basic" reset macro
-    if (Trim(inputStr) == "") {
-        inputStr := "basic"
-    }
-    
-    Loop Parse, inputStr, "," {
-        cleanName := StrLower(Trim(A_LoopField))
-        
-        if (cleanName == "")
-            continue
-            
-        if TankTree.Has(cleanName) {
-            pathKeys := ""
-            currentNode := cleanName
-            
-            ; Reverse tracking loop moving upwards through the trees
-            while (currentNode != "basic" && TankTree.Has(currentNode)) {
-                nodeData := StrSplit(TankTree[currentNode], "|")
-                
-                pathKeys := nodeData[1] . pathKeys ; Pulls the literal hardware upgrade key
-                currentNode := nodeData[2]          ; Shifts index to target parent node
-            }
-            
-            compiledMacroSequence.Push(pathKeys)
-        } else {
-            ; Fallback route: allows manual string execution if keys match layout variations
-            compiledMacroSequence.Push(cleanName)
-        }
     }
 }
